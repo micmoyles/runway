@@ -7,6 +7,7 @@ from elexon_push_data import XmlDictConfig
 import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
+import psycopg2 as pdb 
 
 class EApp:
     def __init__( self ):
@@ -50,8 +51,8 @@ class loader(EApp):
            TS = TS.strip(':GMT')
            if self.sql == 'mysql': 
               load_cmd = 'insert ignore into frequency values ( " %s " , %f ) ' % (str(TS), float(SF) ) 
-           elif self.sql = 'psql':
-              load_cmd = 'insert into frequency( timstamp, freq )  values ( " %s " , %f ) ' % (str(TS), float(SF) ) 
+           elif self.sql == 'psql':
+              load_cmd = "insert into frequency( timestamp, freq )  values ( '%s' , %f ) " % (str(TS), float(SF) ) 
 
         elif msg['flow'] == 'SOSO':
            data = msg['msg']['row']
@@ -63,17 +64,35 @@ class loader(EApp):
            TT = data['TT']
            TQ = data['TQ']
 #  create table SOSO ( pubTs timestamp, PT float(10,5) , TD varchar(3), IC varchar(30), ST timestamp, TT varchar(30), TQ int(100) ,unique(pubTs) );
-           load_cmd = 'insert ignore into SOSO values ( "%s" , %f,"%s", "%s" , "%s" , "%s", %d ) ' % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
-
-        log.info( load_cmd )
-        db = mdb.connect( self.db, self.username , self.passwd )
-        cursor = db.cursor(mdb.cursors.DictCursor)
-        cursor.execute( db_cmd )
-        cursor.execute( load_cmd )
-        db.commit()
-        cursor.close()
+           if self.sql == 'mysql': 
+              load_cmd = 'insert ignore into SOSO values ( "%s" , %f,"%s", "%s" , "%s" , "%s", %d ) ' % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
+           elif self.sql == 'psql':
+              load_cmd = "insert into SOSO(pubTs,PT,TD,IC,ST,TT,TQ) values ( '%s' , %f,'%s', '%s' , '%s' , '%s', %d ) " % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
+        self.load_to_database( load_cmd ) 
+         
         return 0
 	
+    def load_to_database( self, load_cmd ):
+        assert self.sql in ['mysql','psql','postgres'], 'sql attribute needs to be mysql or psql' 
+        log.info( load_cmd )
+        if self.sql == 'mysql':	
+           db = mdb.connect( self.db, self.username , self.passwd )
+           cursor = db.cursor(mdb.cursors.DictCursor)
+           cursor.execute( db_cmd )
+           cursor.execute( load_cmd )
+           db.commit()
+           cursor.close()
+	elif self.sql in ['psql','postgres']:
+           db=pdb.connect("  dbname='erova' \
+                         user='erova' \
+                         host='postgres.cfqfdoajjaoa.eu-west-1.rds.amazonaws.com' \
+                         password='05LHTo0bMQc4kv'")
+           db.autocommit = True
+           cursor = db.cursor()
+           cursor.execute( load_cmd )
+           db.commit()
+           cursor.close()
+        return 0
 
     def get_file(self):
         file_list = os.listdir(self.root_directory)

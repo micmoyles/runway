@@ -1,0 +1,19 @@
+connection:
+    host: api.bmreports.com
+    port: 61613
+    ssl: true
+    vhost: /AAAAAAAAAAAAA
+    login: h7hmcsud0ubiqss
+    passcode: h7hmcsud0ubiqss
+    client_id: testClient234
+  
+subscription:
+    subscriptionid: mySubscriptionId
+    topic: /topic/bmrsTopic
+    ack: auto
+
+RESTApi:
+    key: jsp06qkyw8zr8uw
+
+writeData:
+    dumpDir: '/mnt/data/REMIT'

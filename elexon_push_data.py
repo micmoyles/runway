@@ -32,10 +32,10 @@ def dump_xml(message):
         counter=counter+1
         counter = '%04d' % counter
     newFile = base + '-' + str(counter) + '.xml'
-    handle = open(newFile,'wb')
-    handle.write(message)
-    handle.write("\n")
-    handle.close()
+    fh = open(newFile,'wb')
+    fh.write(message)
+    fh.write("\n")
+    fh.close()
     log.info( 'Wrote file %s' % str(newFile) )
 
 class XmlDictConfig(dict):
@@ -99,7 +99,7 @@ def get_config(cfgpath):
 class MyListener(stomp.ConnectionListener):
 
     def on_error(self, headers, message):
-        print('   !!!!!! Received an error \n%s' % message)
+        log.info('   !!!!!! Received an error \n%s' % message)
 
     def on_message(self, headers, message):
         dump_xml(message)
@@ -112,7 +112,6 @@ class MyListener(stomp.ConnectionListener):
 
 def main():
     config = get_config('settings.yaml')
-
     conn = stomp.Connection(host_and_ports=[(config['connection']['host'], config['connection']['port'])],
                             use_ssl=config['connection']['ssl'])
     conn.set_listener('', MyListener())

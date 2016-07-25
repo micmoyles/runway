@@ -7,4 +7,5 @@ x.username = 'root'
 x.passwd = 'wiarreft'
 x.cleanup = False
 x.timeout = 0.2
+x.status = False
 x.__start__()

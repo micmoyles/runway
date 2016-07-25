@@ -3,7 +3,7 @@ import socket
 import datetime as dt
 import struct
 import sys,log,os
-from apx_test import XmlDictConfig
+from elexon_push_data import XmlDictConfig
 import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
@@ -48,7 +48,11 @@ class loader(EApp):
            SF = msg['msg']['row']['SF'] 
            TS = msg['msg']['row']['TS'] 
            TS = TS.strip(':GMT')
-           if self.sql == 'mysql': load_cmd = 'insert ignore into frequency values ( " %s " , %f ) ' % (str(TS), float(SF) ) 
+           if self.sql == 'mysql': 
+              load_cmd = 'insert ignore into frequency values ( " %s " , %f ) ' % (str(TS), float(SF) ) 
+           elif self.sql = 'psql':
+              load_cmd = 'insert into frequency( timstamp, freq )  values ( " %s " , %f ) ' % (str(TS), float(SF) ) 
+
         elif msg['flow'] == 'SOSO':
            data = msg['msg']['row']
            pubTs = msg['pubTs'].strip(':GMT')

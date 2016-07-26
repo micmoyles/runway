@@ -37,15 +37,31 @@ class loader(EApp):
         assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
         
     def _parse(self,xmlfile):
+        
         # method to parse the file and return a string to populate a DB table
+        # in its current form the xmltodict method only returns a single dict entry
+        # for multiple xml elements
+        
         tree = xml.etree.ElementTree.parse(xmlfile)
         root = tree.getroot()
         msg = XmlDictConfig(root)
         log.info(msg)
-        if 'flow' not in msg.keys(): return 0
-        if msg['flow'] not in self.whitelist:
-           return 0
-        if msg['flow'] == 'FREQ':
+        if 'flow' in msg.keys():
+			load_cmd = self.parseflow( msg )
+		elif 'DocumentType' in msg.keys():
+			if msg['DocumentType'] == 'REMIT_document':
+				load_cmd = self.parseREMIT( msg )	
+            
+            
+    
+    def parseflow( self , msg ):
+		msgType = msg['flow']  
+		
+		if msgType not in self.whitelist: 
+			return 0
+		log.info('Loading flow message')
+		
+        if msgType == 'FREQ':
            SF = msg['msg']['row']['SF'] 
            TS = msg['msg']['row']['TS'] 
            TS = TS.strip(':GMT')
@@ -54,7 +70,7 @@ class loader(EApp):
            elif self.sql == 'psql':
               load_cmd = "insert into frequency( timestamp, freq )  values ( '%s' , %f ) " % (str(TS), float(SF) ) 
 
-        elif msg['flow'] == 'SOSO':
+        elif msgType == 'SOSO':
            data = msg['msg']['row']
            pubTs = msg['pubTs'].strip(':GMT')
            PT = data['PT']
@@ -63,15 +79,32 @@ class loader(EApp):
            ST = data['ST'].strip(':GMT')
            TT = data['TT']
            TQ = data['TQ']
-#  create table SOSO ( pubTs timestamp, PT float(10,5) , TD varchar(3), IC varchar(30), ST timestamp, TT varchar(30), TQ int(100) ,unique(pubTs) );
+           #  create table SOSO ( pubTs timestamp, PT float(10,5) , TD varchar(3), IC varchar(30), ST timestamp, TT varchar(30), TQ int(100) ,unique(pubTs) );
            if self.sql == 'mysql': 
               load_cmd = 'insert ignore into SOSO values ( "%s" , %f,"%s", "%s" , "%s" , "%s", %d ) ' % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
            elif self.sql == 'psql':
               load_cmd = "insert into SOSO(pubTs,PT,TD,IC,ST,TT,TQ) values ( '%s' , %f,'%s', '%s' , '%s' , '%s', %d ) " % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
-        self.load_to_database( load_cmd ) 
+        
+        self.load_to_database( load_cmd )
+        return 0      
          
-        return 0
-	
+	def parseREMIT( self, msg ):
+		log.info('Loading REMIT message')
+		data = msg['InsideInformation']
+		eventType = data['EventType']
+		if eventType == 'FAILURE':
+			log.alert('Failure message recieved, I should tell someone')
+		if self.sql == 'mysql':
+		    load_cmd = 'insert ignore into outages values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % tuple(data.values())
+		elif self.sql == 'psql':
+			load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
+		log.info(load_cmd)
+		
+		return load_cmd	
+     
+
+		
+        
     def load_to_database( self, load_cmd ):
         assert self.sql in ['mysql','psql','postgres'], 'sql attribute needs to be mysql or psql' 
         log.info( load_cmd )

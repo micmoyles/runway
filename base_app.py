@@ -24,6 +24,8 @@ class loader(EApp):
     def __init__(self,root_directory,database_host):
         EApp.__init__(self)
 	self.root_directory = root_directory
+	self.archive_directory = root_directory + '/archive/'
+	self.transmit_directory = root_directory + '/transmit/'
         self.db = database_host
         self.sql = 'mysql'
         self.username = None
@@ -35,6 +37,8 @@ class loader(EApp):
         self.isBlack = False
         self.isWhite  = False
         assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
+        assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
+        assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
         
     def _parse(self,xmlfile):
         
@@ -47,19 +51,18 @@ class loader(EApp):
         msg = XmlDictConfig(root)
         log.info(msg)
         if 'flow' in msg.keys():
-			load_cmd = self.parseflow( msg )
-		elif 'DocumentType' in msg.keys():
-			if msg['DocumentType'] == 'REMIT_document':
-				load_cmd = self.parseREMIT( msg )	
+	    load_cmd = self.parseflow( msg )
+	elif 'DocumentType' in msg.keys():
+	    if msg['DocumentType'] == 'REMIT_document':
+		load_cmd = self.parseREMIT( msg )	
             
             
     
     def parseflow( self , msg ):
-		msgType = msg['flow']  
-		
-		if msgType not in self.whitelist: 
-			return 0
-		log.info('Loading flow message')
+	msgType = msg['flow']  
+	if msgType not in self.whitelist: 
+		return 0
+	log.info('Loading flow message')
 		
         if msgType == 'FREQ':
            SF = msg['msg']['row']['SF'] 
@@ -88,19 +91,20 @@ class loader(EApp):
         self.load_to_database( load_cmd )
         return 0      
          
-	def parseREMIT( self, msg ):
-		log.info('Loading REMIT message')
-		data = msg['InsideInformation']
-		eventType = data['EventType']
-		if eventType == 'FAILURE':
-			log.alert('Failure message recieved, I should tell someone')
-		if self.sql == 'mysql':
-		    load_cmd = 'insert ignore into outages values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % tuple(data.values())
-		elif self.sql == 'psql':
-			load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
-		log.info(load_cmd)
+    def parseREMIT( self, msg ):
+	log.info('Loading REMIT message')
+	data = msg['InsideInformation']
+	eventType = data['EventType']
+	if eventType == 'FAILURE':
+            log.alert('Failure message recieved, I should tell someone')
+	if self.sql == 'mysql':
+	    load_cmd = 'insert ignore into outages values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % tuple(data.values())
+	elif self.sql == 'psql':
+	    load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
+	log.info(load_cmd)
 		
-		return load_cmd	
+       	self.load_to_database( load_cmd )
+	return 0 
      
 
 		
@@ -129,18 +133,20 @@ class loader(EApp):
         return 0
 
     def get_file(self):
-        file_list = os.listdir(self.root_directory)
+        file_list = os.listdir(self.transmit_directory)
         if len(file_list) == 0: return None
         this_file = sorted(file_list)[0] #choose newest file
 	log.info(this_file)
-        return str(self.root_directory) + '/' + str(this_file)
+        return str(this_file)
 
     def load_and_clear( self ):
-        current_file = self.get_file()
-        if current_file is None: return 
+        a_file = self.get_file()
+        if a_file is None: return None 
+        current_file = self.transmit_directory + a_file
         self._parse( current_file )
-        log.info( 'Deleting %s' % str( current_file ) ) 
-        os.remove( current_file )
+        log.info( 'Archiving %s' % str( current_file ) ) 
+        os.rename( current_file , self.archive_directory + '/' + a_file)
+        return 0
        
     def loadDirectory( self ):
         file_list = os.listdir( self.root_directory )
@@ -158,14 +164,13 @@ class loader(EApp):
           self.isBlack = True
        log.info( self.__dict__ )
 
-       if self.cleanup: 
-          while True:
-             self.load_and_clear()
+       while True:
+          ret_val = self.load_and_clear()
+          if ret_val is None:
+             log.info('No files found, snoozing for 30 seconds')
+             sleep( 30 )
+          else:
              sleep( self.timeout )
-       else: 
-          self.loadDirectory()
-          log.info('Directory loaded. Exiting')
-          sys.exit()
 
 
 

@@ -18,7 +18,9 @@ import log
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def dump_xml(message):
-    dump = '/mnt/data/REMIT/'
+    message = message.replace('xmlns="http://bmreports.com/XSD/1.0/remit.xsd"','')
+    message = message.replace('xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"','')
+    dump = '/mnt/data/REMIT/transmit/'
     assert os.path.exists(dump), 'Missing %s directory' % dump
     base = dump + str(datetime.datetime.now().strftime('%Y%m%d')) 
     dirlist = os.listdir(dump)

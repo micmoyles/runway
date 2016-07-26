@@ -37,11 +37,11 @@ class loader(EApp):
         assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
         
     def _parse(self,xmlfile):
+        # method to parse the file and return a string to populate a DB table
         tree = xml.etree.ElementTree.parse(xmlfile)
         root = tree.getroot()
         msg = XmlDictConfig(root)
         log.info(msg)
-        db_cmd = 'use REMIT'
         if 'flow' not in msg.keys(): return 0
         if msg['flow'] not in self.whitelist:
            return 0
@@ -76,6 +76,7 @@ class loader(EApp):
         assert self.sql in ['mysql','psql','postgres'], 'sql attribute needs to be mysql or psql' 
         log.info( load_cmd )
         if self.sql == 'mysql':	
+           db_cmd = 'use REMIT'
            db = mdb.connect( self.db, self.username , self.passwd )
            cursor = db.cursor(mdb.cursors.DictCursor)
            cursor.execute( db_cmd )

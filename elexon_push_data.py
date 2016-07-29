@@ -1,5 +1,5 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 DESCRIPTION = """
     Script file amqpcon
     Author: Alexey Kolyanov, 2016
@@ -14,7 +14,7 @@ import time
 import stomp
 import xml.etree.ElementTree
 import log
-
+firstRun = True
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def dump_xml(message):
@@ -104,6 +104,7 @@ class MyListener(stomp.ConnectionListener):
         log.info('   !!!!!! Received an error \n%s' % message)
 
     def on_message(self, headers, message):
+	log.info('Received Message')
         dump_xml(message)
         #data = xml.etree.ElementTree.XML(message) 
 	#xmldict = XmlDictConfig(data)

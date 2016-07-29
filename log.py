@@ -300,7 +300,7 @@ twistedobserver = None
 
 def setup(prefix=sys.argv[0], 
           level=LOG_INFO,
-          consolelog=False,
+          consolelog=True,
           SyslogHandler=SyslogHandler1,
           facility=LOG_LOCAL4): 
     " set up logging, safe to call multiple times "

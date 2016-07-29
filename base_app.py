@@ -96,7 +96,8 @@ class loader(EApp):
 	data = msg['InsideInformation']
         d = data
 	eventType = data['EventType']
-        ordered_data = [ d['AffectedUnitEIC'],
+        try:
+           ordered_data = [ d['AffectedUnitEIC'],
                          d['AssetType'],
 			 d['AffectedUnit'],
                          d['DurationUncertainty'],
@@ -111,7 +112,10 @@ class loader(EApp):
                          d['Cause'],
                          d['FuelType'],
                          d['Participant_MarketParticipantID'],
-                         d['MessageHeading'] ]
+                         d['MessageHeading'].replace(' ','_') ]
+	except KeyError:
+	   log.info('Key error in file')
+           return 0
 	if eventType == 'FAILURE':
             log.info('Failure message recieved, I should tell someone')
 	if self.sql == 'mysql':

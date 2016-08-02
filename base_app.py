@@ -93,11 +93,13 @@ class loader(EApp):
          
     def parseREMIT( self, msg ):
 	log.info('Loading REMIT message')
+	creationTs = msg['CreatedDateTime']
 	data = msg['InsideInformation']
         d = data
 	eventType = data['EventType']
         try:
-           ordered_data = [ d['AffectedUnitEIC'],
+           ordered_data = [ creationTs, 
+			 d['AffectedUnitEIC'],
                          d['AssetType'],
 			 d['AffectedUnit'],
                          d['DurationUncertainty'],
@@ -119,7 +121,7 @@ class loader(EApp):
 	if eventType == 'FAILURE':
             log.info('Failure message recieved, I should tell someone')
 	if self.sql == 'mysql':
-	    load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
+	    load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
 	elif self.sql == 'psql':
 	    load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
 	log.info(load_cmd)

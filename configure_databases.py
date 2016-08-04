@@ -5,4 +5,8 @@
 '''
 create table Plants ( name varchar(30), AssetID varchar(30), FuelType varchar(30), NormalCapacity float(10,5), plantID int not null auto_increment, primary key (plantID) )
 '''
-
+'''
+create user 'erova'@'localhost' identified by 'er0va123';
+grant select on REMIT.* to 'erova'@'localhost';
+grant select on config.* to 'erova'@'localhost';
+'''

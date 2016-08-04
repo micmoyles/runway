@@ -22,18 +22,9 @@ def dump_xml(message):
     message = message.replace('xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"','')
     dump = '/mnt/data/REMIT/transmit/'
     assert os.path.exists(dump), 'Missing %s directory' % dump
-    base = dump + str(datetime.datetime.now().strftime('%Y%m%d')) 
+    base = dump + str(datetime.datetime.now().strftime('%Y%m%d_%H%M%S')) 
     dirlist = os.listdir(dump)
-    if len(dirlist) == 0: 
-        counter = '0001'
-    else:
-        lastFile = sorted(dirlist)[len(dirlist) - 1]
-        c = lastFile.split('-')[1] # 003.xml
-        counter = c.split('.')[0] # 003
-        counter = int(counter)
-        counter=counter+1
-        counter = '%04d' % counter
-    newFile = base + '-' + str(counter) + '.xml'
+    newFile = base + '.xml'
     fh = open(newFile,'wb')
     fh.write(message)
     fh.write("\n")

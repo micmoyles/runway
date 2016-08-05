@@ -13,7 +13,7 @@ class plant_monitor(EApp):
     self.interval = []
     self.plants = []
     self.query = '''
-        select messageCreationTs as ts,EventStart,EventEnd,AssetID,EventType,NormalCapacity,AvailableCapacity from outages 
+        select messageCreationTs as ts,NormalCapacity,AvailableCapacity from outages 
         where EventStart < '%s' 
         and EventEnd > '%s' 
         and AssetID = '%s' 
@@ -29,12 +29,12 @@ class plant_monitor(EApp):
     cursor.execute( 'use REMIT' )
     cursor.execute( query )
     row = cursor.fetchone() # fetching one here is fine as we are only expecting one result
-    print plant, row['AvailableCapacity']
+    if row is not None: print plant, row['AvailableCapacity']
     cursor.close()
   
   def start( self ):
     for plant in self.plants:
       self.check_status( 0, plant )
 p = plant_monitor()
-p.plants = ['DRAXX-1','WBUPS-1']
+p.plants = ['DRAXX-1','WBUPS-1','CNQPS-3','T_CNQPS-3']
 p.start()

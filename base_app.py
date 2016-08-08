@@ -7,12 +7,12 @@ from elexon_push_data import XmlDictConfig
 import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
-import psycopg2 as pdb 
+#import psycopg2 as pdb 
 
 class EApp:
     def __init__( self ):
 	self.launchtime = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.status = True
+        self.status = False
 
     def writeStatus( self ):
         statusPath = '/home/mmoyles/status/'

@@ -7,6 +7,8 @@ host = 'localhost'
 user = 'erova'
 passwd = 'er0va123'
 
+# queries REMIT outage info for assetIDs and ensures they exist in config.plant
+
 class plant_updater(EApp):
   def __init__( self ):
     EApp.__init__( self )

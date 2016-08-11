@@ -78,11 +78,13 @@ class plant_monitor(EApp):
       for interval in self.intervals:
         capacity = self.check_status(  interval, plant )
         plant.productionProfile.append(( interval, capacity))
-    plant.productionProfile = dict(plant.productionProfile)
+      plant.productionProfile = dict(plant.productionProfile)
+      output = []
+      for i in self.intervals:
+        output.append(plant.productionProfile[i])
+      print plant.name, output
+
 
 p = plant_monitor()
 p.get_all_known_plants()
 p.start()
-for plant in p.plant_list:
-  print plant.name, plant.NormalCapacity
-  print plant.productionProfile

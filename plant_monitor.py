@@ -8,6 +8,7 @@ user = 'erova'
 passwd = 'er0va123'
 
 class plant:
+# this class should really get the plants normal capacity from a DB query rather than needing it on initialisation
   def __init__( self , name, NormalCapacity ):
     self.name = name
     self.NormalCapacity = NormalCapacity

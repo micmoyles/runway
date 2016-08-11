@@ -7,18 +7,25 @@ host = 'localhost'
 user = 'erova'
 passwd = 'er0va123'
 
+class plant:
+  def __init__( self , name, NormalCapacity ):
+    self.name = name
+    self.NormalCapacity = NormalCapacity
+    self.productionProfile = []
+
 class plant_monitor(EApp):
   def __init__( self ):
     EApp.__init__( self )
     self.interval = []
     self.plants = []
-    self.monitorLength = 5 # days into the future
-    self.monitorInterval = 30# interval to monitor (minutes)
+    self.plant_list = []
+    self.monitorLength = 0.5 # days into the future
+    self.monitorInterval = 60# interval to monitor (minutes)
     self.query = '''
         select messageCreationTs as ts,NormalCapacity,AvailableCapacity from outages 
         where EventStart < '%s' 
         and EventEnd > '%s' 
-        and AssetID = '%s' 
+        and AssetId = '%s' 
         order by ts desc 
         limit 1 
 '''
@@ -29,30 +36,52 @@ class plant_monitor(EApp):
 
   def getIntervals( self ):
     maxMins = int(self.monitorLength * 24 * 60)
-    intervals = range(0, maxMins + self.monitorInterval, self.monitorInterval) 
-    print intervals
+    self.intervals = range(0, maxMins + self.monitorInterval, self.monitorInterval) 
+
+  def get_all_known_plants( self ):
+    query = '''
+    select distinct(AssetId), NormalCapacity from outages
+'''
+    # this query should be done from the plats table but currently it is incomplete
+    db = mdb.connect( host, user, passwd)
+    cursor = db.cursor( mdb.cursors.DictCursor )
+    cursor.execute( 'use REMIT' )
+    cursor.execute( query )
+    rows = cursor.fetchall() 
+    for row in rows: 
+      name = row['AssetId']
+      norm = row['NormalCapacity']
+      self.plants.append(name)
+      self.plant_list.append(plant(name,norm))
+    cursor.close()
 
   def check_status( self, time, plant ):
     time_for_query = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
     time_for_query = (datetime.datetime.now() + datetime.timedelta(minutes=time)).strftime( '%Y-%m-%d %H:%M:%S')
-    query = self.query % ( str(time_for_query), str(time_for_query), plant) 
+    query = self.query % ( str(time_for_query), str(time_for_query), plant.name) 
     db = mdb.connect( host, user, passwd)
     cursor = db.cursor( mdb.cursors.DictCursor )
     cursor.execute( 'use REMIT' )
     cursor.execute( query )
     row = cursor.fetchone() # fetching one here is fine as we are only expecting one result
-    if row is not None: print plant, time, row['AvailableCapacity']
     cursor.close()
+    if row is not None: 
+      return row['AvailableCapacity']
+    else: return plant.NormalCapacity 
+
   
   def start( self ):
     self.runAssertions()
     self.getIntervals()
-    for plant in self.plants:
-      self.check_status(  30, plant )
-      self.check_status(  60, plant )
-      self.check_status(  90, plant )
-      self.check_status( 120, plant )
+    for plant in self.plant_list:
+      for interval in self.intervals:
+        capacity = self.check_status(  interval, plant )
+        plant.productionProfile.append(( interval, capacity))
+    plant.productionProfile = dict(plant.productionProfile)
 
 p = plant_monitor()
-p.plants = ['DRAXX-1','T_CNQPS-3']
+p.get_all_known_plants()
 p.start()
+for plant in p.plant_list:
+  print plant.name, plant.NormalCapacity
+  print plant.productionProfile

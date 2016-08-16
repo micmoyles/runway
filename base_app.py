@@ -45,7 +45,7 @@ class loader(EApp):
    query = '''
    select distinct(AssetId) from plants 
 '''
-   db = mdb.connect( host, user, passwd)
+   db = mdb.connect( self.db, self.username, self.passwd)
    cursor = db.cursor( mdb.cursors.DictCursor )
    cursor.execute( 'use config' )
    cursor.execute( query )
@@ -140,9 +140,9 @@ class loader(EApp):
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.sql == 'psql':
         load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
-    log.info(load_cmd)
+        log.info(load_cmd)
 		
-    self.load_to_database( load_cmd )
+      self.load_to_database( load_cmd )
     return 0 
     
   def load_to_database( self, load_cmd ):
@@ -198,7 +198,7 @@ class loader(EApp):
      self.isWhite = True
     if len(self.blacklist) != 0:
      self.isBlack = True
-    self.get_knwon_Assets()
+    self.get_known_Assets()
     log.info( self.__dict__ )
 
     while True:

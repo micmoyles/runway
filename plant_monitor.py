@@ -14,6 +14,18 @@ class plant:
     self.NormalCapacity = NormalCapacity
     self.productionProfile = []
 
+  def writeJson( self, JsonPath):
+    assert JsonPath is not None
+    JsonFilename = JsonPath + '/' + str(self.name) + '.json'
+    template = '[ ' 
+    for ts, cap in self.productionProfile:
+      text = '{ "timestamp": "%s" , "capacity" : %d },' % (ts, cap)
+      template = template + text
+    template = template + ']'
+    f = open(JsonFilename,'w')
+    f.write(template)
+    f.close()
+
 class plant_monitor(EApp):
   def __init__( self ):
     EApp.__init__( self )
@@ -30,6 +42,7 @@ class plant_monitor(EApp):
         order by ts desc 
         limit 1 
 '''
+
   def runAssertions( self ):
     assert len(self.plants) > 0, 'Need to specify at least one plant'
     assert self.monitorLength is not None
@@ -40,6 +53,7 @@ class plant_monitor(EApp):
     self.intervals = range(0, maxMins + self.monitorInterval, self.monitorInterval) 
 
   def get_all_known_plants( self ):
+
     query = '''
     select distinct(AssetId), NormalCapacity from outages
 '''
@@ -67,8 +81,21 @@ class plant_monitor(EApp):
     row = cursor.fetchone() # fetching one here is fine as we are only expecting one result
     cursor.close()
     if row is not None: 
-      return row['AvailableCapacity']
-    else: return plant.NormalCapacity 
+      return time_for_query, row['AvailableCapacity']
+    else: return time_for_query, plant.NormalCapacity 
+  
+  def updateProductionProfiles( self ):
+    db = mdb.connect( host, user, passwd)
+    cursor = db.cursor( mdb.cursors.DictCursor )
+    cursor.execute( 'use REMIT' )
+    for plant in self.plant_list:
+      for ts, cap in plant.productionProfile:
+        command = '''
+insert into productionProfiles(AssetID,timestamp,AvailableCapacity) values ('%s','%s',%d) 
+''' % ( plant.name, ts, cap)   
+        cursor.execute( command )
+    db.commit()
+    cursor.close()
 
   
   def start( self ):
@@ -76,15 +103,18 @@ class plant_monitor(EApp):
     self.getIntervals()
     for plant in self.plant_list:
       for interval in self.intervals:
-        capacity = self.check_status(  interval, plant )
-        plant.productionProfile.append(( interval, capacity))
-      plant.productionProfile = dict(plant.productionProfile)
+        t, capacity = self.check_status(  interval, plant )
+        plant.productionProfile.append(( t, capacity))
+    #  plant.productionProfile = dict(plant.productionProfile)
+      print plant.name, dict(plant.productionProfile)
+      plant.writeJson('/home/mmoyles')
       output = []
-      for i in self.intervals:
-        output.append(plant.productionProfile[i])
-      print plant.name, output
+      #for i in self.intervals:
+      #  output.append(plant.productionProfile[i])
+      #print plant.name, output
 
 
 p = plant_monitor()
 p.get_all_known_plants()
 p.start()
+p.updateProductionProfiles()

@@ -106,8 +106,8 @@ insert into productionProfiles(AssetID,timestamp,AvailableCapacity) values ('%s'
         t, capacity = self.check_status(  interval, plant )
         plant.productionProfile.append(( t, capacity))
     #  plant.productionProfile = dict(plant.productionProfile)
-      print plant.name, dict(plant.productionProfile)
-      plant.writeJson('/home/mmoyles')
+     # print plant.name, dict(plant.productionProfile)
+      plant.writeJson('/home/erova')
       output = []
       #for i in self.intervals:
       #  output.append(plant.productionProfile[i])

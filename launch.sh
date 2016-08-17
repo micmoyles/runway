@@ -17,7 +17,12 @@ case $cmd in
   'start')
      res=$( pgrep -cf $sourcefile )
      echo res is $res, len is ${#res}
-     if [ ${#res} -gt 1 ]; then echo "$app already running, exiting"; exit 0 ; fi
+     if [ $res -gt 1 ]; then 
+	ps aux | grep  $sourcefile
+	echo "$app already running, exiting"
+	exit 0 
+     fi
+
      ./$sourcefile &> $basepath/$logfile &
      PID=$( pgrep -f $sourcefile )
      echo $PID > $basepath/$pidfile

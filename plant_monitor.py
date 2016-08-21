@@ -22,6 +22,7 @@ class plant:
       text = '{ "timestamp": "%s" , "capacity" : %d },' % (ts, cap)
       template = template + text
     template = template + ']'
+    template = template.replace('},]','}]')
     f = open(JsonFilename,'w')
     f.write(template)
     f.close()
@@ -32,7 +33,7 @@ class plant_monitor(EApp):
     self.interval = []
     self.plants = []
     self.plant_list = []
-    self.monitorLength = 0.5 # days into the future
+    self.monitorLength = 3.0 # days into the future
     self.monitorInterval = 60# interval to monitor (minutes)
     self.query = '''
         select messageCreationTs as ts,NormalCapacity,AvailableCapacity from outages 
@@ -71,8 +72,8 @@ class plant_monitor(EApp):
     cursor.close()
 
   def check_status( self, time, plant ):
-    time_for_query = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-    time_for_query = (datetime.datetime.now() + datetime.timedelta(minutes=time)).strftime( '%Y-%m-%d %H:%M:%S')
+    time_for_query = datetime.datetime.now().strftime('%Y-%m-%d %H-%M')
+    time_for_query = (datetime.datetime.now() + datetime.timedelta(minutes=time)).strftime( '%Y-%m-%d %H:%M')
     query = self.query % ( str(time_for_query), str(time_for_query), plant.name) 
     db = mdb.connect( host, user, passwd)
     cursor = db.cursor( mdb.cursors.DictCursor )

@@ -7,7 +7,7 @@ host = 'localhost'
 user = 'erova'
 passwd = 'er0va123'
 
-# queries REMIT outage info for assetIDs and ensures they exist in config.plant
+# queries REMIT outage info for assetIDs and ensures they exist in config.plant and config.plant_status
 def run_query( query ):
   db = mdb.connect( host, user, passwd)
   cursor = db.cursor( mdb.cursors.DictCursor )
@@ -44,6 +44,7 @@ class plant_updater(EApp):
     rows = cursor.fetchall() 
     for row in rows: 
       command = "insert ignore into plants(Name,AssetId,NormalCapacity,FuelType) values ('%s','%s',%d,'%s')" % (row['AssetId'],row['AssetId'], row['NormalCapacity'], row['FuelType'])
+      #command = "insert ignore into plant_status(AssetId,Status,NormalCapacity,CurrentCapacity) values ('%s','%s',%d,'%s')" % (row['AssetId'],'OPEN', row['NormalCapacity'], row['NormalCapacity'])
       self.command.append(command)
     cursor.close()
 

@@ -35,6 +35,7 @@ class plant_monitor(EApp):
     self.interval = []
     self.plants = []
     self.plant_list = []
+    self.total = plant('TOTAL',0.0)
     self.monitorLength   = 3.0  # days into the future
     self.monitorInterval = 60   # interval to monitor (minutes)
     self.query = '''
@@ -71,6 +72,8 @@ class plant_monitor(EApp):
       norm = row['NormalCapacity']
       self.plants.append(name)
       self.plant_list.append(plant(name,norm))
+    #self.plants.append('TOTAL')
+    #self.plant_list.append(plant( 'TOTAL' , 0.0 ))
     cursor.close()
 
   def check_status( self, time, plant ):
@@ -104,20 +107,20 @@ insert into productionProfiles(AssetID,timestamp,AvailableCapacity) values ('%s'
   def start( self ):
     self.runAssertions()
     self.getIntervals()
-    for plant in self.plant_list:
-      for interval in self.intervals:
+    for interval in self.intervals:
+      total_capacity = 0
+      for plant in self.plant_list:
+      #for interval in self.intervals:
         t, capacity = self.check_status(  interval, plant )
+        total_capacity+=capacity
         plant.productionProfile.append(( t, capacity))
-    #  plant.productionProfile = dict(plant.productionProfile)
-     # print plant.name, dict(plant.productionProfile)
-      plant.writeJson('/home/erova')
-      output = []
-      #for i in self.intervals:
-      #  output.append(plant.productionProfile[i])
-      #print plant.name, output
+      self.total.productionProfile.append(( t, total_capacity))
+    self.plant_list.append(self.total)
+    for plant in self.plant_list: plant.writeJson('/home/erova')
+    
 
 
 p = plant_monitor()
 p.get_all_known_plants()
 p.start()
-p.updateProductionProfiles()
+#p.updateProductionProfiles()

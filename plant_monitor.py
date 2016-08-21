@@ -7,6 +7,8 @@ host = 'localhost'
 user = 'erova'
 passwd = 'er0va123'
 
+# class to create productionProfiles for each plant found in the REMIT databases
+
 class plant:
 # this class should really get the plants normal capacity from a DB query rather than needing it on initialisation
   def __init__( self , name, NormalCapacity ):
@@ -33,8 +35,8 @@ class plant_monitor(EApp):
     self.interval = []
     self.plants = []
     self.plant_list = []
-    self.monitorLength = 3.0 # days into the future
-    self.monitorInterval = 60# interval to monitor (minutes)
+    self.monitorLength   = 3.0  # days into the future
+    self.monitorInterval = 60   # interval to monitor (minutes)
     self.query = '''
         select messageCreationTs as ts,NormalCapacity,AvailableCapacity from outages 
         where EventStart < '%s' 

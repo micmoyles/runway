@@ -123,4 +123,4 @@ insert into productionProfiles(AssetID,timestamp,AvailableCapacity) values ('%s'
 p = plant_monitor()
 p.get_all_known_plants()
 p.start()
-#p.updateProductionProfiles()
+p.updateProductionProfiles()

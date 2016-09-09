@@ -116,7 +116,7 @@ insert into productionProfiles(AssetID,timestamp,AvailableCapacity) values ('%s'
         plant.productionProfile.append(( t, capacity))
       self.total.productionProfile.append(( t, total_capacity))
     self.plant_list.append(self.total)
-    for plant in self.plant_list: plant.writeJson('/home/erova')
+    for plant in self.plant_list: plant.writeJson('/var/www/hanger/plant_data')
     
 
 

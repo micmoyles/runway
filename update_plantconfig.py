@@ -9,6 +9,9 @@ passwd = 'er0va123'
 
 # queries REMIT outage info for assetIDs and ensures they exist in config.plant and config.plant_status
 def run_query( query ):
+  host = 'localhost'
+  user = 'erova'
+  passwd = 'er0va123'
   db = mdb.connect( host, user, passwd)
   cursor = db.cursor( mdb.cursors.DictCursor )
   cursor.execute( query )

@@ -6,6 +6,7 @@ from elexon_push_data import XmlDictConfig
 import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
+import smtplib
 #import psycopg2 as pdb 
 
 class EApp:
@@ -25,8 +26,9 @@ class loader(EApp):
     self.root_directory = root_directory
     self.archive_directory = root_directory + '/archive/'
     self.transmit_directory = root_directory + '/transmit/'
-    self.db = database_host
-    self.sql = 'mysql'
+    self.db = 'localhost'
+    self.hostname = None
+    self.sql = None
     self.username = None
     self.passwd = None
     self.cleanup = True
@@ -137,6 +139,10 @@ class loader(EApp):
       return 0
     if eventType == 'FAILURE':
       log.info('Failure message recieved, I should tell someone')
+      fromAddress = 'alert@erovaenergy.ie'
+      toAddress = 'micmoyles@gmail.com'
+      s = smtplib.SMTP('localhost')
+      s.sendmail( fromAddress, toAddress, msg)
       if self.sql == 'mysql':
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.sql == 'psql':
@@ -159,9 +165,9 @@ class loader(EApp):
       cursor.close()
     elif self.sql in ['psql','postgres']:
       db=pdb.connect(" dbname='erova' \
-             user='erova' \
-             host='postgres.cfqfdoajjaoa.eu-west-1.rds.amazonaws.com' \
-             password='05LHTo0bMQc4kv'")
+             user=$s \
+             host=%s \
+             password=%s" % (self.username , self.passwd , self.hostname ))
       db.autocommit = True
       cursor = db.cursor()
       cursor.execute( load_cmd )
@@ -192,7 +198,8 @@ class loader(EApp):
 	
   def __start__(self):
 
-    assert (self.username is not None) and (self.passwd is not None) and (self.db is not None), 'Loader needs username, password and host configured'
+    assert (self.username is not None) and (self.passwd is not None) and (self.hostname is not None), 'Loader needs username, password and host configured'
+    assert self.sql in ['mysql','psql','postgres'], 'loader needs to know what kind of database language to use - mysql or postgres (psql)'
     assert (len(self.whitelist) * len(self.blacklist)) == 0 , "Cannot have a whitelist and a blacklist %d %d" % (len(self.whitelist), len(self.blacklist))
     if self.status: self.writeStatus()
     if len(self.whitelist) != 0:

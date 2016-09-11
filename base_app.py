@@ -142,7 +142,8 @@ class loader(EApp):
       fromAddress = 'alert@erovaenergy.ie'
       toAddress = 'micmoyles@gmail.com'
       s = smtplib.SMTP('localhost')
-      s.sendmail( fromAddress, toAddress, msg)
+      body = str(ordered_data)
+      s.sendmail( fromAddress, toAddress, body)
       if self.sql == 'mysql':
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.sql == 'psql':

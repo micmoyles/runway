@@ -1,8 +1,7 @@
 #!/usr/bin/python
 import socket
 import datetime as dt
-import struct
-import sys,log,os
+import log,os
 from elexon_push_data import XmlDictConfig
 import xml.etree.ElementTree
 from time import sleep
@@ -67,8 +66,10 @@ class loader(EApp):
     msg = XmlDictConfig(root)
     log.info(msg)
     if 'flow' in msg.keys():
+      # then we are handling a stream formatted message
       load_cmd = self.parseflow( msg )
     elif 'DocumentType' in msg.keys():
+      # then we are handling a pull data message that been placed on the stream network
       if msg['DocumentType'] == 'REMIT_document':
         load_cmd = self.parseREMIT( msg )	
       

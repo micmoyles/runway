@@ -7,7 +7,11 @@ import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
 import smtplib
-#import psycopg2 as pdb 
+#import psycopg2 as pdb
+
+fromAddress = 'alert@erovaenergy.com'
+toAddress = 'micmoyles@gmail.com'
+ccAddress = 'it_helpdesk@erovaenergy.com'
 
 class EApp:
   def __init__( self ):
@@ -122,7 +126,9 @@ class loader(EApp):
     data = msg['InsideInformation']
     d = data
     eventType = data['EventType']
+
     try:
+
       ordered_data = [ creationTs, 
              d['AffectedUnitEIC'],
              d['AssetType'],
@@ -140,17 +146,28 @@ class loader(EApp):
              d['FuelType'],
              d['Participant_MarketParticipantID'],
              d['MessageHeading'].replace(' ','_') ]
+
     except KeyError:
+
       log.info('Key error in file')
       return 0
+
     if eventType == 'FAILURE':
       log.info('Failure message recieved, I should tell someone')
-      fromAddress = 'alert@erovaenergy.ie'
-      toAddress = 'micmoyles@gmail.com,mattgolden@erovaenergy.ie'
+
       body = str(ordered_data)
       log.info('Logging body')
       log.info(body)
-      if d['EventStatus'] == 'OPEN': self.mailer.sendmail( fromAddress, toAddress, 'FAILURE ' + body )
+
+      if d['EventStatus'] == 'OPEN':
+        try:
+          msg = MIMEText( body )
+          msg['To'] = toAddress
+          msg['Subject'] = "FAILURE"
+          self.mailer.sendmail( fromAddress, toAddress, msg.as_string() )
+        except SMTPException:
+          log.info('Error, unable to send email')
+
       if self.sql == 'mysql':
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.sql == 'psql':

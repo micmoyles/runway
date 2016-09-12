@@ -19,6 +19,7 @@ class EApp:
     assert os.path.exists( statusPath ),'Could not find status directory, not continuing'
     
     pass
+
 class loader(EApp):
     # this needs to parse the XML file and upload it to the database
   def __init__(self,root_directory,database_host):
@@ -38,6 +39,8 @@ class loader(EApp):
     self.isBlack = False
     self.isWhite = False
     self.knownAssets = []
+    self.loadtoDB = True
+    self.mailer = smtplib.SMTP('localhost')
     assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
     assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
     assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
@@ -81,9 +84,12 @@ class loader(EApp):
     msgType = msg['flow'] 
     if msgType not in self.whitelist: 
       return 0
-    log.info('Loading flow message')
+    log.info('Loading flow message %s' % str(msgType))
+
+    if msgType == 'IMBALNGC':
+      print msg
 		
-    if msgType == 'FREQ':
+    elif msgType == 'FREQ':
       SF = msg['msg']['row']['SF'] 
       TS = msg['msg']['row']['TS'] 
       TS = TS.strip(':GMT')
@@ -107,7 +113,7 @@ class loader(EApp):
       elif self.sql == 'psql':
         load_cmd = "insert into SOSO(pubTs,PT,TD,IC,ST,TT,TQ) values ( '%s' , %f,'%s', '%s' , '%s' , '%s', %d ) " % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
     
-    self.load_to_database( load_cmd )
+    if self.loadtoDB: self.load_to_database( load_cmd )
     return 0   
      
   def parseREMIT( self, msg ):
@@ -140,17 +146,18 @@ class loader(EApp):
     if eventType == 'FAILURE':
       log.info('Failure message recieved, I should tell someone')
       fromAddress = 'alert@erovaenergy.ie'
-      toAddress = 'micmoyles@gmail.com'
-      s = smtplib.SMTP('localhost')
+      toAddress = 'micmoyles@gmail.com,mattgolden@erovaenergy.ie'
       body = str(ordered_data)
-      s.sendmail( fromAddress, toAddress, body)
+      log.info('Logging body')
+      log.info(body)
+      if d['EventStatus'] == 'OPEN': self.mailer.sendmail( fromAddress, toAddress, 'FAILURE ' + body )
       if self.sql == 'mysql':
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.sql == 'psql':
         load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
         log.info(load_cmd)
 		
-      self.load_to_database( load_cmd )
+      if self.loadtoDB: self.load_to_database( load_cmd )
     return 0 
     
   def load_to_database( self, load_cmd ):

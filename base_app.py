@@ -7,6 +7,7 @@ import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
 import smtplib
+rom email.mime.text import MIMEText
 #import psycopg2 as pdb
 
 fromAddress = 'alert@erovaenergy.com'

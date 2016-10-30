@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "./elexon_push_data.py", line 141, in <module>
-    retval = main()
-  File "./elexon_push_data.py", line 120, in[1;32m2016-08-16 21:34:02.753 ./elexon_push_data.py INFO     Received Message[0m
-[1;32m2016-08-16 21:34:02.753 ./elexon_push_data.py INFO     Wrote file /data/REMIT/transmit/20160816_213402.xml[0m
-[1;32m2016-08-16 21:35:13.634 ./elexon_push_data.py INFO     Received Message[0m
-[1;32m2016-08-16 21:35:13.634 ./elexon_push_data.py INFO     Wrote file /data/REMIT/transmit/20160816_213513.xml[0m

@@ -25,6 +25,7 @@ case $cmd in
 
      ./$sourcefile &> $basepath/$logfile &
      PID=$( pgrep -f $sourcefile )
+     echo $(ps aux | grep $sourcefile)
      echo $PID > $basepath/$pidfile
      ;;
   'stop')

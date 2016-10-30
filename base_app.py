@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!usr/bin/python
 import socket
 import datetime as dt
 import log,os
@@ -7,12 +7,12 @@ import xml.etree.ElementTree
 from time import sleep
 import MySQLdb as mdb
 import smtplib
-rom email.mime.text import MIMEText
+from email.mime.text import MIMEText
 #import psycopg2 as pdb
 
-fromAddress = 'alert@erovaenergy.com'
+fromAddress = 'wizard@erovaenergy.ie'
 toAddress = 'micmoyles@gmail.com'
-ccAddress = 'it_helpdesk@erovaenergy.com'
+ccAddress = 'mattgolden@erovaenergy.ie'
 
 class EApp:
   def __init__( self ):
@@ -164,9 +164,10 @@ class loader(EApp):
         try:
           msg = MIMEText( body )
           msg['To'] = toAddress
+          msg['Cc'] = ccAddress
           msg['Subject'] = "FAILURE"
           self.mailer.sendmail( fromAddress, toAddress, msg.as_string() )
-        except SMTPException:
+        except smtplib.SMTPException:
           log.info('Error, unable to send email')
 
       if self.sql == 'mysql':

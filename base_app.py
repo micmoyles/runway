@@ -8,7 +8,7 @@ from time import sleep
 import MySQLdb as mdb
 import smtplib
 from email.mime.text import MIMEText
-#import psycopg2 as pdb
+import psycopg2 as pdb
 
 fromAddress = 'wizard@erovaenergy.ie'
 toAddress = 'micmoyles@gmail.com'
@@ -46,26 +46,55 @@ class loader(EApp):
     self.knownAssets = []
     self.loadtoDB = True
     self.mailer = smtplib.SMTP('localhost')
+    self.psql = False
+    self.mysql = False
+    self.findSql()
     assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
     assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
     assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
+    assert not (self.mysql and self.psql), 'Can only use one kind of database language, both selected as True'
+
+  def findSql( self ):
+
+    if self.sql in ['mysql']:
+      self.mysql = True
+    elif self.sql in ['postgres','psql']:
+      self.psql = True
 
   def get_known_Assets( self ):
+
    query = '''
    select distinct(AssetId) from plants 
 '''
-   db = mdb.connect( self.db, self.username, self.passwd)
-   cursor = db.cursor( mdb.cursors.DictCursor )
-   cursor.execute( 'use config' )
-   cursor.execute( query )
-   rows = cursor.fetchall()
-   for row in rows:
-     name = row['AssetId']
-     self.knownAssets.append(name)
-   cursor.close()
-    
+   if self.mysql:
 
-  def _parse(self,xmlfile):
+     db = mdb.connect( self.db, self.username, self.passwd)
+     cursor = db.cursor( mdb.cursors.DictCursor )
+     cursor.execute( 'use config' )
+     cursor.execute( query )
+     rows = cursor.fetchall()
+     for row in rows:
+       name = row['AssetId']
+       self.knownAssets.append(name)
+     cursor.close()
+
+   elif self.psql:
+
+     db = pdb.connect(" dbname='remit' \
+              user=$s \
+              host=%s \
+              password=%s" % (self.username, self.passwd, self.hostname))
+     db.autocommit = True
+     cursor = db.cursor()
+     cursor.execute( query )
+     rows = cursor.fetchall()
+     for row in rows:
+       name = row['AssetId']
+       self.knownAssets.append(name)
+     db.commit()
+     cursor.close()
+
+    def _parse(self,xmlfile):
     
     # method to parse the file and return a string to populate a DB table
     # in its current form the xmltodict method only returns a single dict entry
@@ -86,7 +115,8 @@ class loader(EApp):
       
   
   def parseflow( self , msg ):
-    msgType = msg['flow'] 
+
+    msgType = msg['flow']
     if msgType not in self.whitelist: 
       return 0
     log.info('Loading flow message %s' % str(msgType))
@@ -95,12 +125,14 @@ class loader(EApp):
       print msg
 		
     elif msgType == 'FREQ':
-      SF = msg['msg']['row']['SF'] 
+
+      SF = msg['msg']['row']['SF']
       TS = msg['msg']['row']['TS'] 
       TS = TS.strip(':GMT')
-      if self.sql == 'mysql': 
+
+      if self.mysql:
         load_cmd = 'insert ignore into frequency values ( " %s " , %f ) ' % (str(TS), float(SF) ) 
-      elif self.sql == 'psql':
+      elif self.psql:
         load_cmd = "insert into frequency( timestamp, freq ) values ( '%s' , %f ) " % (str(TS), float(SF) ) 
 
     elif msgType == 'SOSO':
@@ -113,15 +145,16 @@ class loader(EApp):
       TT = data['TT']
       TQ = data['TQ']
       # create table SOSO ( pubTs timestamp, PT float(10,5) , TD varchar(3), IC varchar(30), ST timestamp, TT varchar(30), TQ int(100) ,unique(pubTs) );
-      if self.sql == 'mysql': 
+      if self.msql:
         load_cmd = 'insert ignore into SOSO values ( "%s" , %f,"%s", "%s" , "%s" , "%s", %d ) ' % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
-      elif self.sql == 'psql':
+      elif self.psql:
         load_cmd = "insert into SOSO(pubTs,PT,TD,IC,ST,TT,TQ) values ( '%s' , %f,'%s', '%s' , '%s' , '%s', %d ) " % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
     
     if self.loadtoDB: self.load_to_database( load_cmd )
     return 0   
      
   def parseREMIT( self, msg ):
+
     log.info('Loading REMIT message')
     creationTs = msg['CreatedDateTime']
     data = msg['InsideInformation']
@@ -170,9 +203,9 @@ class loader(EApp):
         except smtplib.SMTPException:
           log.info('Error, unable to send email')
 
-      if self.sql == 'mysql':
+      if self.mysql:
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
-      elif self.sql == 'psql':
+      elif self.psql:
         load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
         log.info(load_cmd)
 		
@@ -180,9 +213,11 @@ class loader(EApp):
     return 0 
     
   def load_to_database( self, load_cmd ):
-    assert self.sql in ['mysql','psql','postgres'], 'sql attribute needs to be mysql or psql' 
+
+    assert self.sql in ['mysql','psql','postgres'], 'sql attribute needs to be mysql or psql'
     log.info( load_cmd )
-    if self.sql == 'mysql':	
+    if self.mysql:
+
       db_cmd = 'use REMIT'
       db = mdb.connect( self.db, self.username , self.passwd )
       cursor = db.cursor(mdb.cursors.DictCursor)
@@ -190,8 +225,10 @@ class loader(EApp):
       cursor.execute( load_cmd )
       db.commit()
       cursor.close()
-    elif self.sql in ['psql','postgres']:
-      db=pdb.connect(" dbname='erova' \
+
+    elif self.psql:
+
+      db=pdb.connect(" dbname='remit' \
              user=$s \
              host=%s \
              password=%s" % (self.username , self.passwd , self.hostname ))
@@ -200,9 +237,11 @@ class loader(EApp):
       cursor.execute( load_cmd )
       db.commit()
       cursor.close()
+
     return 0
 
   def get_file(self):
+
     file_list = os.listdir(self.transmit_directory)
     if len(file_list) == 0: return None
     this_file = sorted(file_list)[0] #choose newest file
@@ -210,6 +249,7 @@ class loader(EApp):
     return str(this_file)
 
   def load_and_clear( self ):
+
     a_file = self.get_file()
     if a_file is None: return None 
     current_file = self.transmit_directory + a_file

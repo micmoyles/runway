@@ -22,7 +22,7 @@ conn=pdb.connect("  dbname='config' \
                          password='05LHTo0bMQc4kv'")
 
 p_cursor = conn.cursor()
-p_cmd = 'insert into plants (name, assetid, fueltype, normalcapacity) values( %s, %s, %s, %d)'
+p_cmd = 'insert into plants (name, assetid, fueltype, normalcapacity) values( '%s', '%s', '%s', %d)'
 
 for row in rows:
     p_cursor.execute( p_cmd % (row['name'], row['AssetID'], row['FuelType'],row['NormalCapacity']) )

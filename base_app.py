@@ -48,14 +48,12 @@ class loader(EApp):
     self.mailer = smtplib.SMTP('localhost')
     self.psql = False
     self.mysql = False
-    self.findSql()
     assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
     assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
     assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
-    assert not (self.mysql and self.psql), 'Can only use one kind of database language, both selected as True'
 
   def findSql( self ):
-
+    print self.sql
     if self.sql in ['mysql']:
       self.mysql = True
     elif self.sql in ['postgres','psql']:
@@ -63,38 +61,35 @@ class loader(EApp):
 
   def get_known_Assets( self ):
 
-   query = '''
+    query = '''
    select distinct(AssetId) from plants 
 '''
-   if self.mysql:
+    if self.mysql:
 
-     db = mdb.connect( self.db, self.username, self.passwd)
-     cursor = db.cursor( mdb.cursors.DictCursor )
-     cursor.execute( 'use config' )
-     cursor.execute( query )
-     rows = cursor.fetchall()
-     for row in rows:
-       name = row['AssetId']
-       self.knownAssets.append(name)
-     cursor.close()
+      db = mdb.connect( self.db, self.username, self.passwd)
+      cursor = db.cursor( mdb.cursors.DictCursor )
+      cursor.execute( 'use config' )
+      cursor.execute( query )
+      rows = cursor.fetchall()
+      for row in rows:
+        name = row['AssetId']
+        self.knownAssets.append(name)
+      cursor.close()
 
-   elif self.psql:
+    elif self.psql:
+ 
+      db = pdb.connect(" dbname='remit' user=%s host=%s password=%s" % (self.username, self.hostname, self.passwd))
+      db.autocommit = True
+      cursor = db.cursor()
+      cursor.execute( query )
+      rows = cursor.fetchall()
+      for row in rows:
+        name = row['AssetId']
+        self.knownAssets.append(name)
+      db.commit()
+      cursor.close()
 
-     db = pdb.connect(" dbname='remit' \
-              user=$s \
-              host=%s \
-              password=%s" % (self.username, self.passwd, self.hostname))
-     db.autocommit = True
-     cursor = db.cursor()
-     cursor.execute( query )
-     rows = cursor.fetchall()
-     for row in rows:
-       name = row['AssetId']
-       self.knownAssets.append(name)
-     db.commit()
-     cursor.close()
-
-    def _parse(self,xmlfile):
+  def _parse(self,xmlfile):
     
     # method to parse the file and return a string to populate a DB table
     # in its current form the xmltodict method only returns a single dict entry
@@ -145,7 +140,7 @@ class loader(EApp):
       TT = data['TT']
       TQ = data['TQ']
       # create table SOSO ( pubTs timestamp, PT float(10,5) , TD varchar(3), IC varchar(30), ST timestamp, TT varchar(30), TQ int(100) ,unique(pubTs) );
-      if self.msql:
+      if self.mysql:
         load_cmd = 'insert ignore into SOSO values ( "%s" , %f,"%s", "%s" , "%s" , "%s", %d ) ' % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
       elif self.psql:
         load_cmd = "insert into SOSO(pubTs,PT,TD,IC,ST,TT,TQ) values ( '%s' , %f,'%s', '%s' , '%s' , '%s', %d ) " % (str(pubTs), float(PT), TD, IC, ST, TT, int(TQ) ) 
@@ -229,9 +224,9 @@ class loader(EApp):
     elif self.psql:
 
       db=pdb.connect(" dbname='remit' \
-             user=$s \
+             user=%s \
              host=%s \
-             password=%s" % (self.username , self.passwd , self.hostname ))
+             password=%s" % (self.username , self.hostname , self.passwd ))
       db.autocommit = True
       cursor = db.cursor()
       cursor.execute( load_cmd )
@@ -265,9 +260,11 @@ class loader(EApp):
 	
   def __start__(self):
 
+    self.findSql()
     assert (self.username is not None) and (self.passwd is not None) and (self.hostname is not None), 'Loader needs username, password and host configured'
     assert self.sql in ['mysql','psql','postgres'], 'loader needs to know what kind of database language to use - mysql or postgres (psql)'
     assert (len(self.whitelist) * len(self.blacklist)) == 0 , "Cannot have a whitelist and a blacklist %d %d" % (len(self.whitelist), len(self.blacklist))
+    assert (self.mysql != self.psql), 'Can only use one kind of database language, both selected as True'
     if self.status: self.writeStatus()
     if len(self.whitelist) != 0:
      self.isWhite = True

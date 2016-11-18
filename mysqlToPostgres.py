@@ -25,9 +25,9 @@ p_cursor = conn.cursor()
 p_cmd = 'insert into plants (name, assetid, fueltype, normalcapacity) values( %s, %s, %s, %d)'
 
 for row in rows:
-    print p_cmd % (row['name'], row['AssetID'], row['FuelType'],row['NormalCapacity'])
+    p_cursor.execute( p_cmd % (row['name'], row['AssetID'], row['FuelType'],row['NormalCapacity']) )
 
-
+conn.commit()
 m_cursor.close()
 p_cursor.close()
 

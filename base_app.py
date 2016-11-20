@@ -202,7 +202,7 @@ class loader(EApp):
       if self.mysql:
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.psql:
-        load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(data.keys() + data.values() ) )
+        load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(ordered_data.keys() + ordered_data.values() ) )
         log.info(load_cmd)
 		
       if self.loadtoDB: self.load_to_database( load_cmd )

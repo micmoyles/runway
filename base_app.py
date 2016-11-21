@@ -202,7 +202,10 @@ class loader(EApp):
       if self.mysql:
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
       elif self.psql:
-        load_cmd = 'insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( tuple(ordered_data.keys() + ordered_data.values() ) )
+        fields = ('messagecreationts','affecteduniteic','assettype','affectedunit','durationuncertainty',
+                  'relatedinformation','assetid','eventtype','normalcapacity','availablecapacity','eventstatus',
+                  'eventstart','eventend','cause','fueltype','participant_marketparticipantid','messageheading')
+        load_cmd = 'insert into outages(TIMESTAMP %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( fields + tuple(ordered_data) ) )
         log.info(load_cmd)
 		
       if self.loadtoDB: self.load_to_database( load_cmd )

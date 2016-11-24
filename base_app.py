@@ -48,6 +48,7 @@ class loader(EApp):
     self.mailer = smtplib.SMTP('localhost')
     self.psql = False
     self.mysql = False
+    self.sendEmailForOutages = False
     assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
     assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
     assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
@@ -189,19 +190,25 @@ class loader(EApp):
       log.info('Logging body')
       log.info(body)
 
-      if d['EventStatus'] == 'OPEN':
+      if d['EventStatus'] == 'OPEN' and self.sendEmailForOutages:
+
         try:
+
           msg = MIMEText( body )
           msg['To'] = toAddress
           msg['Cc'] = ccAddress
           msg['Subject'] = "FAILURE"
           self.mailer.sendmail( fromAddress, toAddress, msg.as_string() )
+
         except smtplib.SMTPException:
-          log.info('Error, unable to send email')
+          log.info('Error, unable to send email....')
 
       if self.mysql:
+
         load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
+
       elif self.psql:
+
         fields = ('messagecreationts','affecteduniteic','assettype','affectedunit','durationuncertainty',
                   'relatedinformation','assetid','eventtype','normalcapacity','availablecapacity','eventstatus',
                   'eventstart','eventend','cause','fueltype','participant_marketparticipantid','messageheading')
@@ -219,7 +226,9 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
   def load_to_database( self, load_cmd ):
 
     assert self.sql in ['mysql','psql','postgres'], 'sql attribute needs to be mysql or psql'
+
     log.info( load_cmd )
+
     if self.mysql:
 
       db_cmd = 'use REMIT'
@@ -250,6 +259,7 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     if len(file_list) == 0: return None
     this_file = sorted(file_list)[0] #choose newest file
     log.info(this_file)
+
     return str(this_file)
 
   def load_and_clear( self ):
@@ -263,10 +273,13 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     return 0
     
   def loadDirectory( self ):
+
     file_list = os.listdir( self.root_directory )
+
     for f in file_list:
       self._parse( str(self.root_directory) + '/' + f )
 	
+
   def __start__(self):
 
     self.findSql()
@@ -274,20 +287,28 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     assert self.sql in ['mysql','psql','postgres'], 'loader needs to know what kind of database language to use - mysql or postgres (psql)'
     assert (len(self.whitelist) * len(self.blacklist)) == 0 , "Cannot have a whitelist and a blacklist %d %d" % (len(self.whitelist), len(self.blacklist))
     assert (self.mysql != self.psql), 'Can only use one kind of database language, both selected as True'
+
     if self.status: self.writeStatus()
+
     if len(self.whitelist) != 0:
-     self.isWhite = True
+      self.isWhite = True
+
     if len(self.blacklist) != 0:
-     self.isBlack = True
+      self.isBlack = True
     self.get_known_Assets()
     log.info( self.__dict__ )
 
     while True:
+
      ret_val = self.load_and_clear()
+
      if ret_val is None:
+
        log.info('No files found, snoozing for 30 seconds')
        sleep( 30 )
+
      else:
+
        sleep( self.timeout )
 
 

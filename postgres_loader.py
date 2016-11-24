@@ -10,4 +10,5 @@ x.cleanup = False
 x.timeout = 0.2
 x.status = False
 x.sql = 'psql'
+x.sendEmailForOutages = False
 x.__start__()

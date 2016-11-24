@@ -10,4 +10,5 @@ x.cleanup = True
 x.timeout = 0.2
 x.status = False
 x.sql = 'mysql'
+x.sendEmailForOutages = False
 x.__start__()

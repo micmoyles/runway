@@ -15,11 +15,14 @@ toAddress = 'micmoyles@gmail.com'
 ccAddress = 'mattgolden@erovaenergy.ie'
 
 class EApp:
+
   def __init__( self ):
+
     self.launchtime = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     self.status = False
 
   def writeStatus( self ):
+
     statusPath = '/home/mmoyles/status/'
     assert os.path.exists( statusPath ),'Could not find status directory, not continuing'
     
@@ -28,11 +31,11 @@ class EApp:
 class loader(EApp):
     # this needs to parse the XML file and upload it to the database
   def __init__(self,root_directory,database_host):
+
     EApp.__init__(self)
     self.root_directory = root_directory
     self.archive_directory = root_directory + '/archive/'
     self.transmit_directory = root_directory + '/transmit/'
-    self.db = 'localhost'
     self.hostname = None
     self.sql = None
     self.username = None
@@ -67,7 +70,7 @@ class loader(EApp):
 '''
     if self.mysql:
 
-      db = mdb.connect( self.db, self.username, self.passwd)
+      db = mdb.connect( self.hostname, self.username, self.passwd )
       cursor = db.cursor( mdb.cursors.DictCursor )
       cursor.execute( 'use config' )
       cursor.execute( query )
@@ -232,7 +235,7 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     if self.mysql:
 
       db_cmd = 'use REMIT'
-      db = mdb.connect( self.db, self.username , self.passwd )
+      db = mdb.connect( self.hostname, self.username , self.passwd )
       cursor = db.cursor(mdb.cursors.DictCursor)
       cursor.execute( db_cmd )
       cursor.execute( load_cmd )

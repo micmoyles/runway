@@ -205,7 +205,12 @@ class loader(EApp):
         fields = ('messagecreationts','affecteduniteic','assettype','affectedunit','durationuncertainty',
                   'relatedinformation','assetid','eventtype','normalcapacity','availablecapacity','eventstatus',
                   'eventstart','eventend','cause','fueltype','participant_marketparticipantid','messageheading')
-        load_cmd = 'insert into outages(TIMESTAMP %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % ( fields + tuple(ordered_data) ) )
+        load_cmd = '''
+insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (TIMESTAMP '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',TIMESTAMP '%s',TIMESTAMP '%s','%s','%s','%s','%s')
+''' % ( fields + tuple(ordered_data)  )
+#        load_cmd = '''
+#insert into outages(messagecreationts,affecteduniteic,assettype,affectedunit,durationuncertainty,relatedinformation,assetid,eventtype,normalcapacity,availablecapacity,eventstatus,eventstart,eventend,cause,fueltype,participant_marketparticipantid,messageheading) values (TIMESTAMP '2017-11-19T14:55:09Z','48W00000DRAXX-2C','Production','DRAXX-2','None','Biomass','DRAXX-2','FAILURE',645.0,580.0,'CANCELLED',TIMESTAMP '2017-11-19T15:04:00Z',TIMESTAMP '2017-11-19T20:06:30Z','Boiler / Fuel Supply','OTHER','DRAXX','REMIT_INFORMATION')
+#'''
         log.info(load_cmd)
 		
       if self.loadtoDB: self.load_to_database( load_cmd )

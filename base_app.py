@@ -57,7 +57,6 @@ class loader(EApp):
     assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
 
   def findSql( self ):
-    print self.sql
     if self.sql in ['mysql']:
       self.mysql = True
     elif self.sql in ['postgres','psql']:
@@ -122,7 +121,8 @@ class loader(EApp):
     log.info('Loading flow message %s' % str(msgType))
 
     if msgType == 'IMBALNGC':
-      print msg
+      log.info('IMBALNGC message')
+      log.info(msg)
 		
     elif msgType == 'FREQ':
 
@@ -250,8 +250,12 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
              password=%s" % (self.username , self.hostname , self.passwd ))
       db.autocommit = True
       cursor = db.cursor()
-      cursor.execute( load_cmd )
-      db.commit()
+      try:
+        cursor.execute( load_cmd )
+        db.commit()
+      except:
+        log.error('Formatting error in following message, could not load')
+        log.info( load_cmd )
       cursor.close()
 
     return 0
@@ -261,15 +265,15 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     file_list = os.listdir(self.transmit_directory)
     if len(file_list) == 0: return None
     this_file = sorted(file_list)[0] #choose newest file
+    this_file = self.transmit_directory + this_file
     log.info(this_file)
 
     return str(this_file)
 
   def load_and_clear( self ):
 
-    a_file = self.get_file()
+    current_file = self.get_file()
     if a_file is None: return None 
-    current_file = self.transmit_directory + a_file
     self._parse( current_file )
     log.info( 'Archiving %s' % str( current_file ) ) 
     os.rename( current_file , self.archive_directory + '/' + a_file)
@@ -289,7 +293,7 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     assert (self.username is not None) and (self.passwd is not None) and (self.hostname is not None), 'Loader needs username, password and host configured'
     assert self.sql in ['mysql','psql','postgres'], 'loader needs to know what kind of database language to use - mysql or postgres (psql)'
     assert (len(self.whitelist) * len(self.blacklist)) == 0 , "Cannot have a whitelist and a blacklist %d %d" % (len(self.whitelist), len(self.blacklist))
-    assert (self.mysql != self.psql), 'Can only use one kind of database language, both selected as True'
+    assert (self.mysql != self.psql), 'Can only use one kind of database language, either both are True or both are False'
 
     if self.status: self.writeStatus()
 

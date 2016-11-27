@@ -273,6 +273,7 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     if file_info.st_size == 0:
     # if it is, then delete the current file and call the method again
     # on the nested call, the next non-zero file should be selected and this if statement will not be entered... lets hope
+      log.error( 'Removing %s - file is empty' % str(this_file) )
       os.remove( this_file )
       this_file = self.get_file() 
 

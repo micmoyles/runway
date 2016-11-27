@@ -268,15 +268,24 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     this_file = self.transmit_directory + this_file
     log.info(this_file)
 
+    # check file is not empty
+    file_info = os.stat( this_file )
+    if file_info.st_size == 0:
+    # if it is, then delete the current file and call the method again
+    # on the nested call, the next non-zero file should be selected and this if statement will not be entered... lets hope
+      os.remove( this_file )
+      this_file = self.get_file() 
+
     return str(this_file)
 
   def load_and_clear( self ):
 
     current_file = self.get_file()
-    if a_file is None: return None 
+    if current_file is None: return None 
     self._parse( current_file )
     log.info( 'Archiving %s' % str( current_file ) ) 
-    os.rename( current_file , self.archive_directory + '/' + a_file)
+    os.rename( current_file , current_file.replace('transmit','archive') )
+
     return 0
     
   def loadDirectory( self ):

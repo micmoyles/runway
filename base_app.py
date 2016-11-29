@@ -11,9 +11,7 @@ from email.mime.text import MIMEText
 import psycopg2 as pdb
 import utils
 
-fromAddress = 'wizard@erovaenergy.ie'
-toAddress = 'micmoyles@gmail.com'
-ccAddress = 'mattgolden@erovaenergy.ie'
+
 
 class EApp:
 

@@ -1,13 +1,20 @@
-def sendEmail( body ):
+def sendEmail( body, subject ):
+
   import smtplib
   from email.mime.multipart import MIMEMultipart
   from email.mime.text import MIMEText
+
+  fromAddress = 'micmoyles@gmail.com'
+  toAddress = 'micmoyles@gmail.com'
+  ccAddress = 'mattgolden@erovaenergy.ie'
+
   msg = MIMEMultipart('alternative')
-  msg['Subject'] = "Test email"
-  msg['From'] = 'micmoyles@gmail.com' 
-  msg['To'] = 'micmoyles@gmail.com'
+  msg['Subject'] = subject
+  msg['From'] = fromAddress
+  msg['To'] = toAddress
 
   #  Record the MIME types of both parts - text/plain and text/html.
+
   part2 = MIMEText(body,'html')
 
   msg.attach(part2)
@@ -20,5 +27,5 @@ def sendEmail( body ):
   mail.ehlo()
   #mail.login('mattgolden@erovaenergy.ie', 'EEmattyg11EE')
   mail.login('micmoyles@gmail.com', 'Pi27hliL')
-  mail.sendmail('micmoyles@gmail.com', ['micmoyles@gmail.com','mattgolden@erovaenergy.ie'], msg.as_string())
+  mail.sendmail( fromAddress , [ toAddress ], msg.as_string())
   mail.quit()

@@ -9,6 +9,7 @@ import MySQLdb as mdb
 import smtplib
 from email.mime.text import MIMEText
 import psycopg2 as pdb
+import utils
 
 fromAddress = 'wizard@erovaenergy.ie'
 toAddress = 'micmoyles@gmail.com'
@@ -196,12 +197,13 @@ class loader(EApp):
       if d['EventStatus'] == 'OPEN' and self.sendEmailForOutages:
 
         try:
+         utils.sendEmail( body )
 
-          msg = MIMEText( body )
-          msg['To'] = toAddress
-          msg['Cc'] = ccAddress
-          msg['Subject'] = "FAILURE"
-          self.mailer.sendmail( fromAddress, toAddress, msg.as_string() )
+#          msg = MIMEText( body )
+#          msg['To'] = toAddress
+#          msg['Cc'] = ccAddress
+#          msg['Subject'] = "FAILURE"
+#          self.mailer.sendmail( fromAddress, toAddress, msg.as_string() )
 
         except smtplib.SMTPException:
           log.info('Error, unable to send email....')
@@ -285,7 +287,7 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
     if current_file is None: return None 
     self._parse( current_file )
     log.info( 'Archiving %s' % str( current_file ) ) 
-    os.rename( current_file , current_file.replace('transmit','archive') )
+    if self.cleanup: os.rename( current_file , current_file.replace('transmit','archive') )
 
     return 0
     

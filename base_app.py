@@ -195,36 +195,32 @@ class loader(EApp):
       if d['EventStatus'] == 'OPEN' and self.sendEmailForOutages:
 
         try:
-         utils.sendEmail( body )
 
-#          msg = MIMEText( body )
-#          msg['To'] = toAddress
-#          msg['Cc'] = ccAddress
-#          msg['Subject'] = "FAILURE"
-#          self.mailer.sendmail( fromAddress, toAddress, msg.as_string() )
+          utils.sendEmail( body )
 
         except smtplib.SMTPException:
+
           log.info('Error, unable to send email....')
 
       if self.mysql:
 
-        load_cmd = 'insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")' % tuple(ordered_data)
+        load_cmd = '''
+        insert ignore into outages values ("%s","%s","%s","%s","%s","%s","%s","%s",%f,%f,"%s","%s","%s","%s","%s","%s","%s")
+         '''% tuple(ordered_data)
 
       elif self.psql:
 
         fields = ('messagecreationts','affecteduniteic','assettype','affectedunit','durationuncertainty',
                   'relatedinformation','assetid','eventtype','normalcapacity','availablecapacity','eventstatus',
-                  'eventstart','eventend','cause','fueltype','participant_marketparticipantid','messageheading')
+                  'eventstart','eventend','cause','fueltype','participant_marketparticipantid','messageheading','processed')
         load_cmd = '''
-insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (TIMESTAMP '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',TIMESTAMP '%s',TIMESTAMP '%s','%s','%s','%s','%s')
+insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (TIMESTAMP '%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',TIMESTAMP '%s',TIMESTAMP '%s','%s','%s','%s','%s',False)
 ''' % ( fields + tuple(ordered_data)  )
-#        load_cmd = '''
-#insert into outages(messagecreationts,affecteduniteic,assettype,affectedunit,durationuncertainty,relatedinformation,assetid,eventtype,normalcapacity,availablecapacity,eventstatus,eventstart,eventend,cause,fueltype,participant_marketparticipantid,messageheading) values (TIMESTAMP '2017-11-19T14:55:09Z','48W00000DRAXX-2C','Production','DRAXX-2','None','Biomass','DRAXX-2','FAILURE',645.0,580.0,'CANCELLED',TIMESTAMP '2017-11-19T15:04:00Z',TIMESTAMP '2017-11-19T20:06:30Z','Boiler / Fuel Supply','OTHER','DRAXX','REMIT_INFORMATION')
-#'''
         log.info(load_cmd)
 		
       if self.loadtoDB: self.load_to_database( load_cmd )
-    return 0 
+
+    return 0
     
   def load_to_database( self, load_cmd ):
 
@@ -312,6 +308,7 @@ insert into outages(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) values (
 
     if len(self.blacklist) != 0:
       self.isBlack = True
+
     self.get_known_Assets()
     log.info( self.__dict__ )
 

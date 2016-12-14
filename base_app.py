@@ -22,7 +22,8 @@ class EApp:
 
   def writeStatus( self ):
 
-    statusPath = '/home/mmoyles/status/'
+    statusPath = '/home/erova/runway/status/'
+    writetime = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     assert os.path.exists( statusPath ),'Could not find status directory, not continuing'
     
     pass

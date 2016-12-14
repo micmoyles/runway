@@ -24,6 +24,7 @@ class EApp:
 
     statusPath = '/home/erova/runway/status/'
     writetime = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    uptime = writetime - self.launchtime
     assert os.path.exists( statusPath ),'Could not find status directory, not continuing'
     
     pass

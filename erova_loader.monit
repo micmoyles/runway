@@ -1,3 +1,0 @@
-check process erova_loader
-  with pidfile /home/erova/runway/erova_loader.pid
-    

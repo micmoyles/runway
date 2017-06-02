@@ -1,3 +1,0 @@
-check process elexon_push_data
-  with pidfile /home/erova/runway/elexon_push_data.pid
-    

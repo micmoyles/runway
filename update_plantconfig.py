@@ -19,9 +19,9 @@ def run_query( query ):
   cursor.close()
   return rows
 
-class plant_updater(EApp):
+class plantUpdater(EApp):
   def __init__( self ):
-    EApp.__init__( self )
+    super( plantUpdater, self).__init__()
     self.query = '''
         select distinct(AssetId) ,NormalCapacity, FuelType from outages 
 '''
@@ -71,5 +71,5 @@ class plant_updater(EApp):
       self.insert_plants()
       log.info('Old count was %d, new count is %d' % (self.currentCount, self.count_plants()) )
 
-p = plant_updater()
+p = plantUpdater()
 p.start()

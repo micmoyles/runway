@@ -3,42 +3,23 @@
 import datetime
 import MySQLdb as mdb
 from base_app import EApp
+import plant
 host = 'localhost'
 user = 'erova'
 passwd = 'er0va123'
 
 # class to create productionProfiles for each plant found in the REMIT databases
 
-class plant:
-# this class should really get the plants normal capacity from a DB query rather than needing it on initialisation
-  def __init__( self , name, NormalCapacity ):
-    self.name = name
-    self.NormalCapacity = NormalCapacity
-    self.productionProfile = []
-
-  def writeJson( self, JsonPath):
-    assert JsonPath is not None
-    JsonFilename = JsonPath + '/' + str(self.name) + '.json'
-    template = '[ ' 
-    for ts, cap in self.productionProfile:
-      text = '{ "timestamp": "%s" , "capacity" : %d },' % (ts, cap)
-      template = template + text
-    template = template + ']'
-    template = template.replace('},]','}]')
-    f = open(JsonFilename,'w')
-    f.write(template)
-    f.close()
-
-class plant_monitor(EApp):
+class plantMonitor(EApp):
 
   def __init__( self ):
 
-    EApp.__init__( self )
+    super( plantMonitor, self).__init__()
 
     self.interval = []
     self.plants = []
     self.plant_list = []
-    self.total = plant('TOTAL',0.0)
+    self.total = plant.plant('TOTAL',0.0)
     self.monitorLength   = 3.0  # days into the future
     self.monitorInterval = 60   # interval to monitor (minutes)
     self.query = '''
@@ -78,9 +59,7 @@ class plant_monitor(EApp):
       name = row['AssetId']
       norm = row['NormalCapacity']
       self.plants.append(name)
-      self.plant_list.append(plant(name,norm))
-    #self.plants.append('TOTAL')
-    #self.plant_list.append(plant( 'TOTAL' , 0.0 ))
+      self.plant_list.append(plant.plant(name,norm))
     cursor.close()
 
   def check_status( self, time, plant ):
@@ -130,7 +109,7 @@ insert into productionProfiles(AssetID,timestamp,AvailableCapacity) values ('%s'
     
 
 
-p = plant_monitor()
+p = plantMonitor()
 p.get_all_known_plants()
 p.start()
 p.updateProductionProfiles()

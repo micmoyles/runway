@@ -6,7 +6,7 @@ from time import sleep
 import MySQLdb as mdb
 import smtplib
 from email.mime.text import MIMEText
-import psycopg2 as pdb
+#import psycopg2 as pdb
 from base_app import *
     
 

@@ -8,7 +8,7 @@ DESCRIPTION = """
 import os
 import datetime
 import sys
-sys.path.append('/home/erova/packages/python/')
+sys.path.append('/home/erova/packages/python/') # this needs to change to something like /usr/local/packages
 import yaml
 import time
 import stomp

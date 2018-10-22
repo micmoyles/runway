@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<msgGrp>
+	<pubTs>2018-10-22 15:28:07:GMT</pubTs>
+	<flow>RURE</flow>
+<msg>
+	<subject>BMRA.DYNAMIC.T_SEAB-1.RURE</subject>
+<row>
+	<TE>2018-10-22 15:27:00:GMT</TE>
+	<U1>4.6</U1>
+	<UB>300</UB>
+	<U2>3.0</U2>
+	<UC>450</UC>
+	<U3>26.0</U3>
+</row>
+</msg>
+</msgGrp>
+

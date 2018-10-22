@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<msgGrp>
+	<pubTs>2018-10-22 15:18:32:GMT</pubTs>
+	<flow>FREQ</flow>
+<msg>
+	<subject>BMRA.SYSTEM.FREQ</subject>
+<row>
+	<TS>2018-10-22 15:16:00:GMT</TS>
+	<SF>49.900</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:16:15:GMT</TS>
+	<SF>49.890</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:16:30:GMT</TS>
+	<SF>49.915</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:16:45:GMT</TS>
+	<SF>49.917</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:17:00:GMT</TS>
+	<SF>49.902</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:17:15:GMT</TS>
+	<SF>49.892</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:17:30:GMT</TS>
+	<SF>49.897</SF>
+</row>
+
+<row>
+	<TS>2018-10-22 15:17:45:GMT</TS>
+	<SF>49.902</SF>
+</row>
+</msg>
+</msgGrp>
+

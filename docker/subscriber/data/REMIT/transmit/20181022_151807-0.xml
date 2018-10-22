@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<msgGrp>
+	<pubTs>2018-10-22 15:18:06:GMT</pubTs>
+	<flow>MELS</flow>
+<msg>
+	<subject>BMRA.BM.E_LYNE1.MEL</subject>
+	<SD>2018-10-22 00:00:00</SD>
+	<SP>33</SP>
+	<NP>4</NP>
+<row>
+	<TS>2018-10-22 15:00:00:GMT</TS>
+	<VE>0.000</VE>
+</row>
+<row>
+	<TS>2018-10-22 15:19:00:GMT</TS>
+	<VE>0.000</VE>
+</row>
+<row>
+	<TS>2018-10-22 15:19:00:GMT</TS>
+	<VE>120.000</VE>
+</row>
+<row>
+	<TS>2018-10-22 15:30:00:GMT</TS>
+	<VE>120.000</VE>
+</row>
+</msg>
+
+<msg>
+	<subject>BMRA.BM.E_LYNE1.MEL</subject>
+	<SD>2018-10-22 00:00:00</SD>
+	<SP>34</SP>
+	<NP>2</NP>
+<row>
+	<TS>2018-10-22 15:30:00:GMT</TS>
+	<VE>120.000</VE>
+</row>
+<row>
+	<TS>2018-10-22 16:00:00:GMT</TS>
+	<VE>120.000</VE>
+</row>
+</msg>
+
+<msg>
+	<subject>BMRA.BM.E_LYNE1.MEL</subject>
+	<SD>2018-10-22 00:00:00</SD>
+	<SP>35</SP>
+	<NP>2</NP>
+<row>
+	<TS>2018-10-22 16:00:00:GMT</TS>
+	<VE>120.000</VE>
+</row>
+<row>
+	<TS>2018-10-22 16:30:00:GMT</TS>
+	<VE>120.000</VE>
+</row>
+</msg>
+</msgGrp>
+

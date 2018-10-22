@@ -1,4 +1,4 @@
-1#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 DESCRIPTION = """
     Script file amqpcon
@@ -86,15 +86,9 @@ class REMITListener(stomp.ConnectionListener):
 
     def on_message(self, headers, message):
 	log.info('Received Message')
-	log.info( headers)
+	log.info( headers )
         self.dump( message )
-        #data = xml.etree.ElementTree.XML(message) 
-	#xmldict = XmlDictConfig(data)
-	#print xmldict
-	#for node in data.iter(): print node.tag
-       	#print('   ****** Received a message \n%s %s' % (str(datetime.datetime.now()) , message))
-
-
+        
     def dump(self,message):
 
         message = message.replace('xmlns="http://bmreports.com/XSD/1.0/remit.xsd"', '')

@@ -25,6 +25,7 @@ def sendEmail( body, subject ):
   mail.starttls()
 
   mail.ehlo()
+  #mail.login('mattgolden@erovaenergy.ie', 'EEmattyg11EE')
   mail.login('micmoyles@gmail.com', 'PASSWORDHERE')
   mail.sendmail( fromAddress , [ toAddress ], msg.as_string())
   mail.quit()

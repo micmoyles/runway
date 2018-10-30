@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-DESCRIPTION = """
-    Script file amqpcon
-    Author: Alexey Kolyanov, 2016
-"""
+
 
 import os
 import datetime

@@ -16,4 +16,4 @@ RESTApi:
     key: jsp06qkyw8zr8uw
 
 writeData:
-    dumpDir: '/mnt/data/REMIT'
+    dumpDir: 'data/REMIT/transmit/'

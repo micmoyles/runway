@@ -5,3 +5,5 @@ python infra designed to
 * parse raw data and load to databases
 
 The databases are created and configured by a puppet module
+
+Separate code for hanger which performs the analysis on stored data and generates the web front end.

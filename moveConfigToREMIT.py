@@ -19,7 +19,7 @@ rows = m_cursor.fetchall()
 conn=pdb.connect("  dbname='config' \
                          user='erova' \
                          host='postgres.cfqfdoajjaoa.eu-west-1.rds.amazonaws.com' \
-                         password='05LHTo0bMQc4kv'")
+                         password='blank'")
 
 p_cursor = conn.cursor()
 p_cmd = 'insert into plants (name, assetid, fueltype, normalcapacity) values( \'%s\', \'%s\', \'%s\', %d);'

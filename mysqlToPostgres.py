@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# temp script to move all postgres held data to local mysql databases
+
 import MySQLdb as mdb
 import psycopg2 as pdb
 username = 'erova'

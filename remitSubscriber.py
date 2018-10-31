@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os
-import datetime
-import sys
+import os,datetime,sys,time
 sys.path.append('/usr/local/packages/python/')
-import yaml
-import time
 import stomp
+import yaml
 import xml.etree.ElementTree
-import log
+import runway.log as log
 firstRun = True
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -71,10 +68,11 @@ def get_config(cfgpath):
     return config
 
 
-class MyListener(stomp.ConnectionListener):
+class REMITSubscriber(stomp.ConnectionListener):
 
-    def __init__(self):
+    def __init__(self,dumpDir):
         self.counter = 0
+        self.dumpDir = dumpDir
 
     def on_error(self, headers, message):
         log.info('   !!!!!! Received an error \n%s' % message)
@@ -94,9 +92,7 @@ class MyListener(stomp.ConnectionListener):
         message = message.replace('xmlns="http://bmreports.com/XSD/1.0/remit.xsd"', '')
         message = message.replace(
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"', '')
-        dump = '/data/REMIT/transmit/'
-        assert os.path.exists(dump), 'Missing %s directory' % dump
-        base = dump + str(datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
+        base = self.dumpDir + str(datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
         ext = '.xml'
 
         newFile = base + '-' + str(self.counter) + ext
@@ -115,9 +111,16 @@ class MyListener(stomp.ConnectionListener):
 
 def main():
     config = get_config('settings.yaml')
+    dumpDir = config['writeData']['dumpDir']
+    if not os.path.exists(dumpDir):
+        log.info('Creating dump directory')
+        os.makedirs(dumpDir)
+
+    assert os.path.exists(dumpDir), 'Missing %s directory' % dump
+
     conn = stomp.Connection(host_and_ports=[(config['connection']['host'], config['connection']['port'])],
                             use_ssl=config['connection']['ssl'])
-    conn.set_listener('', MyListener())
+    conn.set_listener('', REMITSubscriber(dumpDir))
     conn.start()
     conn_headers = {
         'host': config['connection']['vhost'],

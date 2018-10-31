@@ -1,5 +1,5 @@
 #!usr/bin/python
-import socket
+import socket,sys
 from remitSubscriber import XmlDictConfig
 import xml.etree.ElementTree
 from time import sleep
@@ -30,10 +30,11 @@ class loader(EApp):
     self.isWhite = False
     self.knownAssets = []
     self.loadtoDB = True
-    self.mailer = smtplib.SMTP('localhost')
+    self.sendEmailForOutages = False
+    if self.sendEmailForOutages:
+     self.mailer = smtplib.SMTP('localhost')
     self.psql = False
     self.mysql = False
-    self.sendEmailForOutages = False
     self.currentFile = None
 
     # some parameters to determine what data we want to process
@@ -44,11 +45,7 @@ class loader(EApp):
     self.fileList = [] # processed files
     self.pendingFileList = [] # files remaining in the transmit directory that need processing
 
-    # some assertions will need to be run on every initialisation
 
-    assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
-    assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
-    assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
 
   def findSql( self ):
     if self.sql in ['mysql']:
@@ -349,7 +346,11 @@ class loader(EApp):
       self._parse( str(self.root_directory) + '/' + f )
 	
 
-  def __start__(self):
+  def __start__(self, dryrun = False):
+
+    if dryrun:
+      log.info('Dry run, not initialising anything.')
+      sys.exit()
 
     self.findSql()
 
@@ -360,6 +361,12 @@ class loader(EApp):
       "Cannot have a whitelist and a blacklist %d %d" % (len(self.whitelist), len(self.blacklist))
     assert (self.mysql != self.psql), \
       'Can only use one kind of database language, either both are True or both are False'
+    
+    # some assertions will need to be run on every initialisation
+
+    assert os.path.exists(self.root_directory),'Could not find root directory, not continuing'
+    assert os.path.exists(self.archive_directory),'Could not find archive directory, not continuing'
+    assert os.path.exists(self.transmit_directory),'Could not find transmit directory, not continuing'
 
     if self.status: self.writeStatus()
 
@@ -384,6 +391,3 @@ class loader(EApp):
      else:
 
        sleep( self.timeout )
-
-
-
